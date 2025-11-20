@@ -5,7 +5,7 @@ export interface FundsLedgerTypes {
   clientId: mongoose.Types.ObjectId;
   ticketBookingId: mongoose.Types.ObjectId;
   ticketTotalAmount: number;
-  airline: "buddha" | "shree" | "yeti" | "nepalair";
+  airline: "buddha_air" | "shree_air" | "yeti_air" | "nepal_air";
   balance: number;
   description: string;
   createdAt: Date;

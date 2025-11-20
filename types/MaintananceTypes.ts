@@ -3,6 +3,6 @@ export interface MaintanaceTypes {
   vehicleId: string;
   description: string;
   date: string;
-  cost: string;
+  cost: number;
   receipt: string;
 }
