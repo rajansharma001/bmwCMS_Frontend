@@ -90,30 +90,24 @@ const SideMenu = () => {
       {/* Dropdown Menu */}
       {t_menuClicked && (
         <div className="w-full flex flex-col gap-2  text-start bg-gray-600 transition-transform duration-300 ease-in-out">
-          <Link href="/dashboard/vehicle/add" className={`${menuStyles} `}>
-            Add Ticlet amount
-          </Link>
-          <Link href="/dashboard/vehicle/add" className={`${menuStyles} `}>
-            Add Ticket Sale
-          </Link>
           <Link
-            href="/dashboard/vehicle/maintance"
+            href="/dashboard/tickets/manage-funds"
             className={`${menuStyles} `}
           >
-            Unpaid Payments
+            Manage Funds
           </Link>
           <Link
-            href="/dashboard/vehicle/maintance"
+            href="/dashboard/tickets/manage-tickets"
             className={`${menuStyles} `}
           >
-            Ticket Sales Report
+            Manage Tickets
           </Link>
         </div>
       )}
 
       {/* finance menu */}
 
-      <div
+      {/* <div
         className={`${menuStyles} flex items-center justify-between`}
         onClick={() => {
           setV_MenuClicked(false);
@@ -128,10 +122,10 @@ const SideMenu = () => {
             f_menuClicked ? "rotate-90" : "rotate-0"
           } transition-transform duration-300 ease-in-out  `}
         />
-      </div>
+      </div> */}
 
       {/* Dropdown Menu */}
-      {f_menuClicked && (
+      {/* {f_menuClicked && (
         <div className="w-full flex flex-col gap-2  text-start bg-gray-600 transition-transform duration-300 ease-in-out">
           <Link href="/dashboard/vehicle/add" className={`${menuStyles} `}>
             Manage Invoices
@@ -152,7 +146,7 @@ const SideMenu = () => {
             Total Profit and Loss Report
           </Link>
         </div>
-      )}
+      )} */}
 
       <Link
         href="/dashboard/clients/manage-clients"
@@ -160,9 +154,9 @@ const SideMenu = () => {
       >
         Manage Clients
       </Link>
-      <Link href="/support" className={`${menuStyles}`}>
+      {/* <Link href="/support" className={`${menuStyles}`}>
         Support
-      </Link>
+      </Link> */}
 
       <Link href="/dashboard" className={`${menuStyles}`}>
         Settings

@@ -2,16 +2,15 @@ import { Types } from "mongoose";
 
 export interface TicketBooking extends Document {
   clientId: Types.ObjectId | string;
-  email: string;
-  bookingDate: Date;
+  bookingDate: string;
   status: "pending" | "confirmed" | "cancelled" | "completed";
 
   // Travel Details
   tripType: "one-way" | "round-trip" | "multi-city";
   departureFrom: string;
   destinationTo: string;
-  departureDate: Date;
-  returnDate?: Date;
+  departureDate: string;
+  returnDate?: string;
   airlineName?: string;
   flightNumber?: string;
   seatClass?: "Economy" | "Business" | "First";

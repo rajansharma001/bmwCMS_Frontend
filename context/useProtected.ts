@@ -11,22 +11,15 @@ export const useProtectedRoute = (redirectIfLoggedIn: boolean = false) => {
   useEffect(() => {
     if (isLoading) return;
 
-    // Case 1: Redirect logged-in users away from auth pages
-    if (redirectIfLoggedIn && user) {
+    if (redirectIfLoggedIn) {
       if (user) {
         router.replace("/dashboard");
-      } else {
-        router.replace("/");
       }
       return;
     }
-
-    // Case 2: Protect restricted pages
-    if (!redirectIfLoggedIn) {
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
+    // Case 2: Protect dashboard pages
+    if (!user) {
+      router.replace("/login");
     }
   }, [user, isLoading, redirectIfLoggedIn, router]);
 };
