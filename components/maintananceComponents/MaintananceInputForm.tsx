@@ -18,7 +18,7 @@ const MaintananceInputForm = ({ formClose, onSubmitSuccess }: Props) => {
 
   const [formData, setFormData] = useState<MaintanaceTypes>({
     vehicleId: "",
-    cost: "",
+    cost: 0 || null,
     date: "",
     description: "",
     receipt: "",
