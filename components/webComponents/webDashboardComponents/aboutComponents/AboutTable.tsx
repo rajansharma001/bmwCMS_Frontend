@@ -324,12 +324,14 @@ const AboutTable = ({ tableRefresh }) => {
                     </div>
                   </div>
                   <div className="lg:col-span-2 flex items-center justify-center">
-                    <Image
-                      alt="logo"
-                      src={aboutImage || ""}
-                      width={100}
-                      height={100}
-                    />
+                    {aboutImage && (
+                      <Image
+                        alt="logo"
+                        src={aboutImage || ""}
+                        width={100}
+                        height={100}
+                      />
+                    )}
                   </div>
                   {/* Buttons */}
                   <div className="lg:col-span-4 flex items-center justify-end gap-4 pt-4 border-t border-gray-100">

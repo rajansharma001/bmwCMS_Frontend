@@ -72,11 +72,11 @@ const MENU_ITEMS = [
     href: "/dashboard/clients/manage-clients",
     icon: Users,
   },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
+  // {
+  //   title: "Settings",
+  //   href: "/dashboard/settings",
+  //   icon: Settings,
+  // },
 ];
 
 const SideMenu = () => {

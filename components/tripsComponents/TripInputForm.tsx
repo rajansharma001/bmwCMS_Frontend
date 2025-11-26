@@ -165,9 +165,11 @@ const TripInputForm = ({ formClose, onSubmitSuccess }) => {
   return (
     <div className="w-full flex justify-center items-center">
       {isSubmitLoading ? (
-        <div className="w-full flex flex-col items-center justify-center">
-          <Loader size={30} className="animate-spin" />
-          <h1>Loading</h1>
+        <div className="w-full flex justify-center items-center absolute top-0 left-0 h-full bg-black/30">
+          <div className="p-10 w-fit bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
+            <Loader size={30} className="animate-spin" />
+            <h1 className="mt-2">Submitting Trip...</h1>
+          </div>
         </div>
       ) : (
         <form

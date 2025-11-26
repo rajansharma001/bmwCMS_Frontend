@@ -1,14 +1,13 @@
 "use client";
 import { formInput, inputHelp, inputLable } from "@/styles/styles";
 import Button from "../Button";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { VehicleType } from "@/types/vehicleTypes";
 import { Loader } from "lucide-react";
+import { toast } from "sonner";
 
 const VehicleInputForm = ({ formClose, onSubmitSuccess }) => {
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
-  const [message, setMessage] = useState<string>("");
-  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState<VehicleType>({
     v_model: "",
@@ -46,11 +45,12 @@ const VehicleInputForm = ({ formClose, onSubmitSuccess }) => {
       );
 
       const result = await res.json();
-      setIsSubmitLoading(false);
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        setIsSubmitLoading(false);
+
+        toast.error(result.error);
       } else {
+        setIsSubmitLoading(false);
         onSubmitSuccess();
         setFormData({
           v_model: "",
@@ -59,14 +59,13 @@ const VehicleInputForm = ({ formClose, onSubmitSuccess }) => {
           v_number: "",
           last_service_date: "",
         });
-        setSuccess(true);
 
-        setMessage("Vehicle added successfully.");
+        toast.success("Vehicle added successfully.");
         formClose();
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      setIsSubmitLoading(false);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -80,21 +79,12 @@ const VehicleInputForm = ({ formClose, onSubmitSuccess }) => {
     });
   };
 
-  useEffect(() => {
-    if (message !== "") {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
   return (
     <div className="w-full flex justify-center items-center">
       {isSubmitLoading ? (
-        <div className="w-full flex flex-col items-center justify-center">
+        <div className="p-10 bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
           <Loader size={30} className="animate-spin" />
-          <h1>Loading</h1>
+          <h1 className="mt-2">Submitting Vehicle...</h1>
         </div>
       ) : (
         <form
@@ -102,20 +92,6 @@ const VehicleInputForm = ({ formClose, onSubmitSuccess }) => {
           onSubmit={handleSubmit}
           method="POST"
         >
-          {/* notification alert */}
-          {message !== "" && (
-            <div
-              className={` w-full p-5 rounded-md ${
-                success ? "bg-green-200 text-white" : "bg-red-200 text-white"
-              }`}
-            >
-              <h1
-                className={`${success ? "text-green-700 " : "text-red-700 "}`}
-              >
-                {message}
-              </h1>
-            </div>
-          )}
           <div className="absolute top-2 right-2 ">
             <Button btnStyle="" btnTitle="Close" clickEvent={formClose} />
           </div>

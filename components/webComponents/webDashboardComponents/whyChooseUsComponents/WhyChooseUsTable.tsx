@@ -8,6 +8,7 @@ import Button from "@/components/Button";
 import RichTextEditor from "@/components/RichTextEditor";
 import { formInput, inputLable } from "@/styles/styles";
 import { Loader } from "lucide-react";
+import Image from "next/image";
 
 const defaultFormData = {
   heading: "",
@@ -112,11 +113,17 @@ const WhyChooseUsTable = ({ tableRefresh }) => {
     >,
     index?: number
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+
     if (index !== undefined) {
       const newItems = [...formData.items];
       newItems[index] = { ...newItems[index], [name]: value };
       setFormData((prev) => ({ ...prev, items: newItems }));
+    } else if (type === "file") {
+      const target = e.target as HTMLInputElement; // <-- type assertion
+      if (target.files && target.files.length > 0) {
+        setFormData((prev) => ({ ...prev, [name]: target.files[0] }));
+      }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -148,14 +155,20 @@ const WhyChooseUsTable = ({ tableRefresh }) => {
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitLoading(true);
+
+    const form = new FormData();
+    form.append("heading", formData.heading);
+    form.append("title", formData.title);
+    form.append("shortDescription", formData.shortDescription);
+    form.append("image", formData.image);
+    form.append("items", JSON.stringify(formData.items));
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/whychooseus/update-whychooseus/${itemId}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(formData),
+          body: form,
         }
       );
       const result = await res.json();
@@ -182,6 +195,7 @@ const WhyChooseUsTable = ({ tableRefresh }) => {
               <th className="px-4 py-3">Heading</th>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Short Description</th>
+              <th className="px-4 py-3">Image</th>
               <th className="px-4 py-3">Items</th>
               <th className="px-4 py-3 text-center">Action</th>
             </tr>
@@ -197,6 +211,17 @@ const WhyChooseUsTable = ({ tableRefresh }) => {
                   <td className="px-4 py-3">{item.heading}</td>
                   <td className="px-4 py-3">{item.title}</td>
                   <td className="px-4 py-3">{item.shortDescription}</td>
+                  <td className="px-4 py-3">
+                    {item.image && (
+                      <Image
+                        src={item.image}
+                        alt="Why choose us image"
+                        height={250}
+                        width={250}
+                        className="w-20"
+                      />
+                    )}
+                  </td>
                   <td className="px-4 py-3 flex  gap-2">
                     {item.items?.map((i, idx) => {
                       const IconComp = LucideIcons[i.icon];
@@ -307,13 +332,11 @@ const WhyChooseUsTable = ({ tableRefresh }) => {
                       Image URL <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
                       id="image"
+                      type="file"
                       name="image"
-                      value={formData.image}
+                      accept="image/*"
                       onChange={handleChange}
-                      placeholder="Image URL"
-                      required
                       className={formInput}
                     />
                   </div>

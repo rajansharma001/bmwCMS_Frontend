@@ -35,6 +35,8 @@ const availableIcons = [
   "Camera", // Media / gallery
   "Star", // Featured / favorite
   "Shield", // Security / privacy
+  "Car",
+  "Plane",
 ];
 const defaultFormData = {
   heading: "",

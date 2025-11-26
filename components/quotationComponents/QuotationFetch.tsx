@@ -7,11 +7,9 @@ import { VehicleQuotationType } from "@/types/vehicleQuotationType";
 import { VehicleType } from "@/types/vehicleTypes";
 import { clientType } from "@/types/clientTypes";
 import { vehicleQuotationTableType } from "@/types/vehicleQuotationTableTypes";
+import { toast } from "sonner";
 
 const QuotationFetch = ({ refreshTable }) => {
-  const [message, setMessage] = useState<string>("");
-  const [success, setSuccess] = useState(false);
-
   const [vehicles, setVehicles] = useState<VehicleType[] | null>([]);
 
   const [quotationDetails, setQuotationDetails] = useState<
@@ -89,7 +87,7 @@ const QuotationFetch = ({ refreshTable }) => {
           console.log("Something went wrong.");
         }
       } catch (error) {
-        if (isMounted) setMessage(`API ERROR: ${error}`);
+        if (isMounted) toast.error(`API ERROR: ${error}`);
       }
     };
     getVehicle();
@@ -116,16 +114,13 @@ const QuotationFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setDeleteAlertPop(false);
-        setSuccess(true);
-        setMessage("Quotation deleted successfully.");
+        toast.success("Quotation deleted successfully.");
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -143,8 +138,7 @@ const QuotationFetch = ({ refreshTable }) => {
         const result = await res.json();
         if (!res.ok) {
           if (isMounted) {
-            // setSuccess(false);
-            // setMessage(result.error);
+            toast.error(result.error);
           }
         } else {
           if (isMounted) {
@@ -153,8 +147,7 @@ const QuotationFetch = ({ refreshTable }) => {
         }
       } catch (error) {
         if (isMounted) {
-          setSuccess(false);
-          setMessage(`API ERROR. : ${error}`);
+          toast.error(`API ERROR. : ${error}`);
         }
       }
     };
@@ -177,7 +170,7 @@ const QuotationFetch = ({ refreshTable }) => {
         const result = await res.json();
         if (isMounted && res.ok) setClients(result.getClients);
       } catch (error) {
-        if (isMounted) setMessage(`API ERROR: ${error}`);
+        if (isMounted) toast.error(`API ERROR: ${error}`);
       }
     };
     getClients();
@@ -206,15 +199,6 @@ const QuotationFetch = ({ refreshTable }) => {
   );
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
-  useEffect(() => {
-    if (message !== "") {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
   // fetch vehicle details by id
   const fetchQuotationById = async () => {
     try {
@@ -227,8 +211,7 @@ const QuotationFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         const q = result.getQuotationById;
         const tables = result.getQuotationTableById || [];
@@ -260,8 +243,7 @@ const QuotationFetch = ({ refreshTable }) => {
         }
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -288,17 +270,14 @@ const QuotationFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setUpdateFormPop(false);
         setGlobalRefereshTable((prev) => !prev);
-        setSuccess(true);
-        setMessage("Quotation details updated successfully.");
+        toast.success("Quotation details updated successfully.");
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
   const handleReset = () => {
@@ -321,21 +300,6 @@ const QuotationFetch = ({ refreshTable }) => {
 
   return (
     <div className="w-full">
-      {/* notification alert */}
-      <div className="py-3">
-        {message !== "" && (
-          <div
-            className={` w-full p-5 rounded-md ${
-              success ? "bg-green-200 text-white" : "bg-red-200 text-white"
-            }`}
-          >
-            <h1 className={`${success ? "text-green-700 " : "text-red-700 "}`}>
-              {message}
-            </h1>
-          </div>
-        )}
-      </div>
-
       <div className="w-full mt-5">
         <div className="overflow-x-auto rounded-sm shadow-md  border-gray-300">
           <div className="flex justify-end py-5">
@@ -487,19 +451,6 @@ const QuotationFetch = ({ refreshTable }) => {
             className="relative w-full max-w-4xl space-y-6 p-4 md:p-8 rounded-sm bg-white shadow-md"
             onSubmit={handleUpdate}
           >
-            {/* Notification */}
-            {message && (
-              <div
-                className={`w-full p-3 rounded-md ${
-                  success
-                    ? "bg-green-200 text-green-800"
-                    : "bg-red-200 text-red-800"
-                }`}
-              >
-                {message}
-              </div>
-            )}
-
             {/* Close Button */}
             <div className="absolute top-2 right-2">
               <Button

@@ -7,6 +7,7 @@ import { Loader } from "lucide-react";
 import { vehicleQuotationTableType } from "@/types/vehicleQuotationTableTypes";
 import { VehicleType } from "@/types/vehicleTypes";
 import { clientType } from "@/types/clientTypes";
+import { toast } from "sonner";
 
 interface QuotationInputFormProps {
   formClose: () => void;
@@ -18,8 +19,6 @@ const QuotationInputForm = ({
   onSubmitSuccess,
 }: QuotationInputFormProps) => {
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
-  const [message, setMessage] = useState<string>("");
-  const [success, setSuccess] = useState(false);
   const [clients, setClients] = useState<clientType[] | null>([]);
   const [vehicles, setVehicles] = useState<VehicleType[] | null>([]);
   const [quotationData, setQuotationData] = useState({
@@ -85,7 +84,7 @@ const QuotationInputForm = ({
         const result = await res.json();
         if (isMounted && res.ok) setClients(result.getClients);
       } catch (error) {
-        if (isMounted) setMessage(`API ERROR: ${error}`);
+        if (isMounted) toast.error(`API ERROR: ${error}`);
       }
     };
     getClients();
@@ -109,7 +108,7 @@ const QuotationInputForm = ({
           console.log("Something went wrong.");
         }
       } catch (error) {
-        if (isMounted) setMessage(`API ERROR: ${error}`);
+        if (isMounted) toast.error(`API ERROR: ${error}`);
       }
     };
     getVehicle();
@@ -135,8 +134,7 @@ const QuotationInputForm = ({
       const result = await res.json();
       setIsSubmitLoading(false);
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.message || "Something went wrong");
+        toast.error(result.message || "Something went wrong");
       } else {
         onSubmitSuccess();
         setQuotationData({
@@ -154,13 +152,11 @@ const QuotationInputForm = ({
             total: 0,
           },
         ]);
-        setSuccess(true);
-        setMessage("Quotation created successfully.");
+        toast.success("Quotation created successfully.");
       }
     } catch (error) {
       setIsSubmitLoading(false);
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -182,16 +178,6 @@ const QuotationInputForm = ({
     ]);
   };
 
-  useEffect(() => {
-    if (message !== "") {
-      const timer = setTimeout(() => {
-        setMessage("");
-        formClose();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message, formClose]);
-
   return (
     <div className="w-full flex justify-center items-center p-2">
       {isSubmitLoading ? (
@@ -204,19 +190,6 @@ const QuotationInputForm = ({
           className="relative w-full max-w-4xl space-y-6 p-4 md:p-8 rounded-sm bg-white shadow-md"
           onSubmit={handleSubmit}
         >
-          {/* Notification */}
-          {message && (
-            <div
-              className={`w-full p-3 rounded-md ${
-                success
-                  ? "bg-green-200 text-green-800"
-                  : "bg-red-200 text-red-800"
-              }`}
-            >
-              {message}
-            </div>
-          )}
-
           {/* Close Button */}
           <div className="absolute top-2 right-2">
             <Button btnStyle="" btnTitle="Close" clickEvent={formClose} />

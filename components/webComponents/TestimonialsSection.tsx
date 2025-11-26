@@ -1,44 +1,60 @@
 "use client";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // --- SLIDABLE TESTIMONIALS ---
 const TestimonialsSection = () => {
-  // Using specific reviews related to Vehicle and Ticket booking based on client data context
-  const reviews = [
-    {
-      text: "I would like to thank Best Mid West for giving my family a safe and comfortable journey to Rara. The vehicle was in top condition and the driver was very professional.",
-      name: "Lorry Melon",
-      location: "Kathmandu",
-    },
-    {
-      text: "Thank God I found this company on time. I was able to book an urgent flight ticket when others were sold out. Amazing service!",
-      name: "Steve Smith",
-      location: "Nepalgunj",
-    },
-    {
-      text: "One of the best vehicle rental services in town. I loved their behavior and how they treat customers. Transparent pricing and no hidden costs.",
-      name: "Elora",
-      location: "Kohalpur",
-    },
-  ];
+  const [testimonialData, setTestimonialData] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTestimonials = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/testimonials/get-testimonial`,
+          { method: "GET", credentials: "include" }
+        );
+        const result = await res.json();
+        if (res.ok && isMounted) setTestimonialData(result.testimonials);
+        else if (isMounted) console.log(result.error);
+      } catch (error) {
+        console.log("API Error fetching Testimonials!", error);
+      }
+    };
+    fetchTestimonials();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Safe default structure
+  const reviews = testimonialData[0] || {
+    heading: "",
+    title: "",
+    reviews: [],
+  };
+
+  const totalReviews = reviews.reviews?.length || 0;
+
   const nextReview = () =>
-    setActiveIndex((prev) => (prev + 1) % reviews.length);
+    setActiveIndex((prev) => (prev + 1) % (totalReviews || 1));
+
   const prevReview = () =>
-    setActiveIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+    setActiveIndex(
+      (prev) => (prev - 1 + (totalReviews || 1)) % (totalReviews || 1)
+    );
 
   return (
     <section className="py-24 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="text-red-600 font-bold tracking-wider uppercase text-sm">
-            Testimonials
+            {reviews.heading}
           </span>
           <h2 className="text-4xl font-extrabold text-blue-900 mt-2">
-            What Our Clients Say
+            {reviews.title}
           </h2>
         </div>
 
@@ -49,19 +65,23 @@ const TestimonialsSection = () => {
 
           <div className="relative z-10 text-center transition-opacity duration-500 ease-in-out">
             <div className="flex justify-center text-yellow-400 mb-6">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-current" />
-              ))}
+              {[...Array(reviews.reviews?.[activeIndex]?.star || 0)].map(
+                (_, i) => (
+                  <Star key={i} className="w-6 h-6 fill-current" />
+                )
+              )}
             </div>
+
             <p className="text-lg md:text-xl text-gray-600 italic mb-8 leading-relaxed">
-              {`"${reviews[activeIndex].text}"`}
+              {`"${reviews.reviews?.[activeIndex]?.reviewText || ""}"`}
             </p>
+
             <div>
               <h4 className="font-bold text-xl text-blue-900">
-                {reviews[activeIndex].name}
+                {reviews.reviews?.[activeIndex]?.name || ""}
               </h4>
               <p className="text-sm text-gray-500">
-                {reviews[activeIndex].location}
+                {reviews.reviews?.[activeIndex]?.location || ""}
               </p>
             </div>
           </div>
@@ -83,7 +103,7 @@ const TestimonialsSection = () => {
 
         {/* Dots */}
         <div className="flex justify-center gap-2 mt-8">
-          {reviews.map((_, idx) => (
+          {reviews.reviews?.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setActiveIndex(idx)}

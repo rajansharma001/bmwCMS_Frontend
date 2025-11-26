@@ -10,6 +10,7 @@ import WhyChooseUs from "@/components/webComponents/WhyChooseUs";
 import TestimonialsSection from "@/components/webComponents/TestimonialsSection";
 import ContactSection from "@/components/webComponents/ContactSection";
 import GallerySection from "@/components/webComponents/GallerySection";
+import PackagesSection from "@/components/webComponents/PackagesSection";
 
 // --- MAIN LAYOUT ---
 
@@ -21,6 +22,7 @@ export default function HomePage() {
       <CounterSection />
       <AboutSection />
       <ServicesSection />
+      <PackagesSection />
       <WhyChooseUs />
       <GallerySection />
       <FaqSection />

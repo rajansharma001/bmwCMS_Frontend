@@ -82,7 +82,7 @@ const BrandInputForm = ({ formClose, onSubmitSuccess }) => {
       {isSubmitLoading ? (
         <div className="p-10 bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
           <Loader size={30} className="animate-spin" />
-          <h1 className="mt-2">Submitting ticket...</h1>
+          <h1 className="mt-2">Submitting Brand...</h1>
         </div>
       ) : (
         <form

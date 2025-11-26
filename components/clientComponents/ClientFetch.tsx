@@ -5,10 +5,10 @@ import Button from "../Button";
 import Alert from "../alertAndNotification/Alert";
 import { Loader } from "lucide-react";
 import { clientType } from "@/types/clientTypes";
+import { toast } from "sonner";
 
 const ClientFetch = ({ refreshTable }) => {
   const [message, setMessage] = useState<string>("");
-  const [success, setSuccess] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   const [clientDetails, setClientDetails] = useState<clientType[] | null>([]);
@@ -43,17 +43,14 @@ const ClientFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setDeleteAlertPop(false);
         setGlobalRefereshTable((prev) => !prev);
-        setSuccess(true);
-        setMessage("Client deleted successfully.");
+        toast.success("Client deleted successfully.");
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -71,8 +68,7 @@ const ClientFetch = ({ refreshTable }) => {
         const result = await res.json();
         if (!res.ok) {
           if (isMounted) {
-            setSuccess(false);
-            setMessage(result.error);
+            toast.error(result.error);
           }
         } else {
           if (isMounted) {
@@ -81,8 +77,7 @@ const ClientFetch = ({ refreshTable }) => {
         }
       } catch (error) {
         if (isMounted) {
-          setSuccess(false);
-          setMessage(`API ERROR. : ${error}`);
+          toast.error(`API ERROR. : ${error}`);
         }
       }
     };
@@ -139,8 +134,7 @@ const ClientFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setFormData({
           clientName: result.getClientsById.clientName || "",
@@ -153,8 +147,7 @@ const ClientFetch = ({ refreshTable }) => {
         setFetchedEmail(result.getClientsById.email);
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -175,6 +168,7 @@ const ClientFetch = ({ refreshTable }) => {
 
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
+    setIsSubmitLoading(true);
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/clients/update-client/${clientId}`,
@@ -190,17 +184,14 @@ const ClientFetch = ({ refreshTable }) => {
       const result = await res.json();
       setIsSubmitLoading(false);
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setGlobalRefereshTable((prev) => !prev);
-        setSuccess(true);
-        setMessage("Client details updated successfully.");
+        toast.success("Client details updated successfully.");
         setUpdateFormPop(false);
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -217,21 +208,6 @@ const ClientFetch = ({ refreshTable }) => {
 
   return (
     <div className="w-full">
-      {/* notification alert */}
-      <div className="py-3">
-        {message !== "" && (
-          <div
-            className={` w-full p-5 rounded-md ${
-              success ? "bg-green-200 text-white" : "bg-red-200 text-white"
-            }`}
-          >
-            <h1 className={`${success ? "text-green-700 " : "text-red-700 "}`}>
-              {message}
-            </h1>
-          </div>
-        )}
-      </div>
-
       <div className="w-full mt-5">
         <div className="overflow-x-auto rounded-sm shadow-md  border-gray-300">
           <div className="flex justify-end py-5">
@@ -364,9 +340,11 @@ const ClientFetch = ({ refreshTable }) => {
       {updateFormPop && (
         <div className=" absolute top-50 right-30 w-full flex items-center justify-center ">
           {isSubmitLoading ? (
-            <div className="w-full flex flex-col items-center justify-center text-white">
-              <Loader size={30} className="animate-spin text-white" />
-              <h1 className="text-white">Loading</h1>
+            <div className="w-full flex justify-center items-center absolute top-0 left-0 h-full bg-black/30">
+              <div className="p-10 w-fit bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
+                <Loader size={30} className="animate-spin" />
+                <h1 className="mt-2">Updating Client...</h1>
+              </div>
             </div>
           ) : (
             <form

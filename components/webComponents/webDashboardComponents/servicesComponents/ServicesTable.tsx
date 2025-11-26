@@ -49,6 +49,8 @@ const availableIcons = [
   "Camera", // Media / gallery
   "Star", // Featured / favorite
   "Shield", // Security / privacy
+  "Car",
+  "Plane",
 ];
 
 const ServicesTable = ({ tableRefresh }) => {
@@ -327,11 +329,13 @@ const ServicesTable = ({ tableRefresh }) => {
                           Service Item {index + 1}
                         </h3>
                         {formData.items.length > 1 && (
-                          <Button
-                            btnStyle="bg-red-500 text-white rounded-md px-2"
-                            btnTitle="Remove"
-                            clickEvent={() => removeItem(index)}
-                          />
+                          <button
+                            type="button"
+                            onClick={() => removeItem(index)}
+                            className={`text-white h-10 bg-red-500 flex items-center justify-center rounded-sm py-4 px-7  hover:bg-gray-500 hover:text-gray-300 cursor-pointer transition-all duration-300 ease-in-out uppercase text-sm`}
+                          >
+                            Remove
+                          </button>
                         )}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

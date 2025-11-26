@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About", href: "about" },
   { label: "Services", href: "/services" },
+  { label: "Packages", href: "/packages" },
   { label: "Gallery", href: "/gallery" },
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
@@ -18,12 +19,45 @@ const NAV_LINKS = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [brand, setBrand] = useState([]);
+  useEffect(() => {
+    let isMounted = true;
+    const handleFetch = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/brand/get-brand`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        const result = await res.json();
+        if (!res.ok) {
+          if (isMounted) {
+            console.log(result.error);
+          }
+        } else {
+          if (isMounted) {
+            setBrand(result.getBrand);
+          }
+        }
+      } catch (error) {
+        console.log("API Error!", error);
+      }
+    };
+    handleFetch();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const singleBrand = brand[0];
 
   return (
     <nav
@@ -39,33 +73,33 @@ const Navbar = () => {
           <Link href={"/"}>
             <div className="flex items-center gap-3 cursor-pointer group">
               <div
-                className={`h-12 w-12 flex items-center justify-center rounded-lg overflow-hidden  ${
+                className={`h-9 w-12 flex items-center justify-center rounded-sm overflow-hidden  ${
                   scrolled ? "bg-blue-50" : "bg-white/10 backdrop-blur-sm"
                 }`}
               >
-                <Image
-                  alt="logo"
-                  src={
-                    "https://bmwtoursandtravels.com/wp-content/uploads/2024/08/bmwtt.webp"
-                  }
-                  width={250}
-                  height={250}
-                />
+                {singleBrand?.logo && (
+                  <Image
+                    alt="logo"
+                    src={singleBrand?.logo}
+                    width={280}
+                    height={250}
+                  />
+                )}
               </div>
               <div>
                 <h1
-                  className={`text-2xl font-extrabold tracking-tight leading-none ${
+                  className={`text-2xl font-extrabold tracking-tight leading-none uppercase ${
                     scrolled ? "text-blue-900" : "text-white"
                   }`}
                 >
-                  BEST MID WEST
+                  {singleBrand?.title}
                 </h1>
                 <p
                   className={`text-[10px] font-bold tracking-[0.2em] uppercase ${
                     scrolled ? "text-red-600" : "text-gray-200"
                   }`}
                 >
-                  Tours & Travels Pvt. Ltd.
+                  {singleBrand?.subTitle}
                 </p>
               </div>
             </div>

@@ -1,14 +1,13 @@
 "use client";
 import { formInput, inputHelp, inputLable } from "@/styles/styles";
 import Button from "../Button";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Loader } from "lucide-react";
 import { clientType } from "@/types/clientTypes";
+import { toast } from "sonner";
 
 const ClientInputForm = ({ formClose, onSubmitSuccess }) => {
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
-  const [message, setMessage] = useState<string>("");
-  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState<clientType>({
     clientName: "",
@@ -51,10 +50,10 @@ const ClientInputForm = ({ formClose, onSubmitSuccess }) => {
       const result = await res.json();
       setIsSubmitLoading(false);
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         onSubmitSuccess();
+        formClose();
         setFormData({
           clientName: "",
           companyName: "",
@@ -63,12 +62,10 @@ const ClientInputForm = ({ formClose, onSubmitSuccess }) => {
           mobile: "",
           address: "",
         });
-        setSuccess(true);
-        setMessage("Client added successfully.");
+        toast.success("Client added successfully.");
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -83,22 +80,14 @@ const ClientInputForm = ({ formClose, onSubmitSuccess }) => {
     });
   };
 
-  useEffect(() => {
-    if (message !== "") {
-      const timer = setTimeout(() => {
-        setMessage("");
-        formClose();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message, formClose]);
-
   return (
     <div className="w-full flex justify-center items-center">
       {isSubmitLoading ? (
-        <div className="w-full flex flex-col items-center justify-center">
-          <Loader size={30} className="animate-spin" />
-          <h1>Loading</h1>
+        <div className="w-full flex justify-center items-center absolute top-0 left-0 h-full bg-black/30">
+          <div className="p-10 w-fit bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
+            <Loader size={30} className="animate-spin" />
+            <h1 className="mt-2">Submitting Client...</h1>
+          </div>
         </div>
       ) : (
         <form
@@ -106,20 +95,6 @@ const ClientInputForm = ({ formClose, onSubmitSuccess }) => {
           onSubmit={handleSubmit}
           method="POST"
         >
-          {/* notification alert */}
-          {message !== "" && (
-            <div
-              className={` w-full p-5 rounded-md ${
-                success ? "bg-green-200 text-white" : "bg-red-200 text-white"
-              }`}
-            >
-              <h1
-                className={`${success ? "text-green-700 " : "text-red-700 "}`}
-              >
-                {message}
-              </h1>
-            </div>
-          )}
           <div className="absolute top-2 right-2 ">
             <Button btnStyle="" btnTitle="Close" clickEvent={formClose} />
           </div>

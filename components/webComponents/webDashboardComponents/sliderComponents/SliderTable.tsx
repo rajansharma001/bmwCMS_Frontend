@@ -101,7 +101,7 @@ const SliderTable = ({ tableRefresh }) => {
         toast.error(result.error);
       } else {
         const slider = result.getSliderById;
-        setSlideImg(slider.slideImg);
+        setSlideImg(slider.slideImg || "");
         setFormData({
           heading: slider.heading || "",
           title: slider.title || "",
@@ -192,7 +192,7 @@ const SliderTable = ({ tableRefresh }) => {
         {isSubmitLoading && (
           <div className="p-10 w-fit bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
             <Loader size={30} className="animate-spin" />
-            <h1 className="mt-2">Submitting ticket...</h1>
+            <h1 className="mt-2">Submitting Slider...</h1>
           </div>
         )}
       </div>
@@ -224,7 +224,7 @@ const SliderTable = ({ tableRefresh }) => {
                   <td className="px-4 py-3">
                     <Image
                       alt="logo"
-                      src={details.slideImg}
+                      src={details.slideImg || "/default.webp"}
                       width={100}
                       height={100}
                       className="h-[100px]"
@@ -290,7 +290,7 @@ const SliderTable = ({ tableRefresh }) => {
             {isSubmitLoading ? (
               <div className="p-10 bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
                 <Loader size={30} className="animate-spin" />
-                <h1 className="mt-2">Submitting ticket...</h1>
+                <h1 className="mt-2">Updating Slider...</h1>
               </div>
             ) : (
               <form
@@ -383,13 +383,15 @@ const SliderTable = ({ tableRefresh }) => {
                     </div>
                   </div>
                   <div className="lg:col-span-2 flex items-center justify-center">
-                    <Image
-                      alt="logo"
-                      src={slideImg || ""}
-                      width={100}
-                      height={100}
-                      className="h-[150px]"
-                    />
+                    {slideImg && (
+                      <Image
+                        alt="slideImg"
+                        src={slideImg}
+                        width={100}
+                        height={100}
+                        className="h-[150px]"
+                      />
+                    )}
                   </div>
                   {/* Buttons */}
                   <div className="  lg:col-span-2 flex items-center justify-end gap-4 pt-4 border-t border-gray-100">

@@ -309,8 +309,12 @@ const TripTable = ({ refreshTable }: { refreshTable: boolean }) => {
 
       const result = await res.json();
       if (!res.ok) {
+        setIsSubmitLoading(false);
+
         toast.error(result.error);
       } else {
+        setIsSubmitLoading(false);
+
         setUpdateFormPop(false);
         setGlobalRefereshTable((prev) => !prev);
         toast.success("Trip details updated successfully.");
@@ -621,9 +625,11 @@ const TripTable = ({ refreshTable }: { refreshTable: boolean }) => {
       {updateFormPop && (
         <div className=" fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
           {isSubmitLoading ? (
-            <div className="p-10 bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
-              <Loader size={30} className="animate-spin" />
-              <h1 className="mt-2">Loading Trip Data...</h1>
+            <div className="w-full flex justify-center items-center absolute top-0 left-0 h-full bg-black/30">
+              <div className="p-10 w-fit bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
+                <Loader size={30} className="animate-spin" />
+                <h1 className="mt-2">Updating Trip...</h1>
+              </div>
             </div>
           ) : (
             <form

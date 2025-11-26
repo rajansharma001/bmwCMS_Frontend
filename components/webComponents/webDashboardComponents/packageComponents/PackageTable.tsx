@@ -14,10 +14,11 @@ import {
   DollarSign,
   Plus,
   Image,
+  Tag, // Added Tag icon for Special Offer
 } from "lucide-react";
 import { useProtectedRoute } from "@/context/useProtected";
 
-// --- Package Interfaces (Based on Final Mongoose Model) ---
+// --- Package Interfaces (Synchronized with Mongoose Schema) ---
 interface PackageItem {
   name: string;
   price: number;
@@ -25,13 +26,13 @@ interface PackageItem {
   hasDiscount: boolean;
   priceUnit: string;
   billingCycle: string;
-  features: string | string[]; // Can be string[] for existing data, or string for form input
+  features: string | string[]; // string for form input (comma-separated), string[] for initial fetch/API
   isFeatured: boolean;
   callToAction: string;
   imageUrl: string;
-  specialOfferTitle: string;
-  specialOfferDetails: string;
-  hasSpecialOffer: boolean;
+  specialOfferTitle: string; // From Schema
+  specialOfferDetails: string; // From Schema
+  hasSpecialOffer: boolean; // From Schema
   _id?: string; // ID for the subdocument
 }
 
@@ -93,9 +94,15 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
               ...section,
               packages: section.packages.map((pkg) => ({
                 ...pkg,
+                // Ensure features is a string for the form, even if fetched as array
                 features: Array.isArray(pkg.features)
                   ? pkg.features.join(", ")
                   : pkg.features,
+                // Ensure numeric fields are correctly set, especially for new fields if they return null/undefined
+                discountedPrice: pkg.discountedPrice || 0,
+                specialOfferTitle: pkg.specialOfferTitle || "",
+                specialOfferDetails: pkg.specialOfferDetails || "",
+                hasSpecialOffer: pkg.hasSpecialOffer || false,
               })),
             })
           );
@@ -135,6 +142,11 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
             features: Array.isArray(pkg.features)
               ? pkg.features.join(", ")
               : pkg.features,
+            // Ensure data integrity for new fields
+            discountedPrice: pkg.discountedPrice || 0,
+            specialOfferTitle: pkg.specialOfferTitle || "",
+            specialOfferDetails: pkg.specialOfferDetails || "",
+            hasSpecialOffer: pkg.hasSpecialOffer || false,
           }));
 
         const dataToLoad: PackageFormData = {
@@ -206,31 +218,36 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
     const validationErrors = formData.packages
       .map((pkg, idx) => {
         if (!pkg.name.trim()) return `Package ${idx + 1}: Name is required.`;
-        if (typeof pkg.price !== "number" || pkg.price <= 0)
-          return `Package ${idx + 1}: Price must be greater than 0.`;
+
+        const price = pkg.price;
+        if (typeof price !== "number" || price <= 0)
+          return `Package ${idx + 1}: Original Price must be greater than 0.`;
+
         if (!pkg.priceUnit.trim())
           return `Package ${idx + 1}: Price Unit is required.`;
         if (!pkg.billingCycle.trim())
           return `Package ${idx + 1}: Billing Cycle is required.`;
         if (!pkg.callToAction.trim())
           return `Package ${idx + 1}: Call to Action is required.`;
+
         // Features validation - check for non-empty string which will be split later
         if (typeof pkg.features !== "string" || pkg.features.trim() === "")
           return `Package ${idx + 1}: Features list is required.`;
 
+        // Discount validation
         if (pkg.hasDiscount) {
-          if (
-            typeof pkg.discountedPrice !== "number" ||
-            pkg.discountedPrice <= 0
-          )
+          const discountedPrice = pkg.discountedPrice;
+          if (typeof discountedPrice !== "number" || discountedPrice <= 0)
             return `Package ${
               idx + 1
             }: Discounted Price must be greater than 0 when discount is active.`;
-          if (pkg.discountedPrice >= pkg.price)
+          if (discountedPrice >= price)
             return `Package ${
               idx + 1
-            }: Discounted Price must be lower than the original price.`;
+            }: Discounted Price must be lower than the original price (${price}).`;
         }
+
+        // Special Offer validation
         if (pkg.hasSpecialOffer) {
           if (!pkg.specialOfferTitle.trim())
             return `Package ${idx + 1}: Special Offer Title is required.`;
@@ -243,17 +260,31 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
 
     if (validationErrors.length > 0) {
       setIsSubmitLoading(false);
+      // Display the first error clearly
       return toast.error(validationErrors[0]);
     }
 
     // 2. Prepare Data for API (Convert features string to array of trimmed strings)
-    const packagesToSend = formData.packages.map((pkg) => ({
-      ...pkg,
-      features: (pkg.features as string)
-        .split(",")
-        .map((f) => f.trim())
-        .filter((f) => f.length > 0),
-    }));
+    const packagesToSend = formData.packages.map((pkg) => {
+      // Clean up optional fields if their associated boolean flag is false
+      const packageData = {
+        ...pkg,
+        features: (pkg.features as string)
+          .split(",")
+          .map((f) => f.trim())
+          .filter((f) => f.length > 0),
+      };
+
+      if (!pkg.hasDiscount) {
+        delete packageData.discountedPrice;
+      }
+      if (!pkg.hasSpecialOffer) {
+        delete packageData.specialOfferTitle;
+        delete packageData.specialOfferDetails;
+      }
+
+      return packageData;
+    });
 
     try {
       const res = await fetch(
@@ -621,17 +652,19 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
                               min="0"
                               required
                             />
-                            {pkg.discountedPrice >= pkg.price && (
-                              <p className="text-red-500 text-xs mt-1">
-                                Discounted price must be lower than the original
-                                price.
-                              </p>
-                            )}
+                            {/* Frontend validation hint */}
+                            {pkg.discountedPrice > 0 &&
+                              pkg.discountedPrice >= pkg.price && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  Discounted price must be strictly lower than
+                                  the original price.
+                                </p>
+                              )}
                           </div>
                         )}
                       </div>
 
-                      {/* Special Offer Toggle and Fields */}
+                      {/* Special Offer Toggle and Fields (UPDATED) */}
                       <div className="border p-3 rounded-lg bg-green-50">
                         <div className="flex items-center mb-2">
                           <input
@@ -649,9 +682,10 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
                           />
                           <label
                             htmlFor={`hasSpecialOffer-${idx}`}
-                            className="font-medium text-green-700"
+                            className="font-medium text-green-700 flex items-center"
                           >
-                            Include Special Offer/Bonus?
+                            <Tag size={16} className="mr-1" /> Include Special
+                            Offer/Bonus?
                           </label>
                         </div>
                         {pkg.hasSpecialOffer && (
@@ -712,7 +746,7 @@ const PackageTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
                           required
                         />
                         <p className="text-xs text-gray-500 mt-1">
-                          Enter each feature separated by a comma. (e.g.,
+                          Enter each feature separated by a **comma** (e.g.,
                           Unlimited Users, 10GB Storage, Priority Support)
                         </p>
                       </div>

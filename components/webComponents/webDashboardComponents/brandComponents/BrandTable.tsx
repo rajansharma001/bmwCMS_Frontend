@@ -234,7 +234,7 @@ const BrandTable = () => {
             {isSubmitLoading ? (
               <div className="p-10 bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
                 <Loader size={30} className="animate-spin" />
-                <h1 className="mt-2">Submitting ticket...</h1>
+                <h1 className="mt-2">Submitting Brand...</h1>
               </div>
             ) : (
               <form
@@ -309,12 +309,14 @@ const BrandTable = () => {
                   </div>
 
                   <div className="lg:col-span-2 flex items-center justify-center">
-                    <Image
-                      alt="logo"
-                      src={brandLogo || ""}
-                      width={100}
-                      height={100}
-                    />
+                    {brandLogo && (
+                      <Image
+                        alt="logo"
+                        src={brandLogo || ""}
+                        width={100}
+                        height={100}
+                      />
+                    )}
                   </div>
 
                   {/* Buttons */}

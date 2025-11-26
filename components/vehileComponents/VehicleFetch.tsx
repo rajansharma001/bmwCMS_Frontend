@@ -4,14 +4,14 @@ import { VehicleType } from "@/types/vehicleTypes";
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import Button from "../Button";
 import Alert from "../alertAndNotification/Alert";
+import { toast } from "sonner";
+import { Loader } from "lucide-react";
 
 const VehicleFetch = ({ refreshTable }) => {
-  const [message, setMessage] = useState<string>("");
-  const [success, setSuccess] = useState(false);
-
   const [vehicleDetails, setVehicleDetails] = useState<VehicleType[] | null>(
     []
   );
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,17 +42,14 @@ const VehicleFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setDeleteAlertPop(false);
         setGlobalRefereshTable((prev) => !prev);
-        setSuccess(true);
-        setMessage("Vehicle deleted successfully.");
+        toast.success("Vehicle deleted successfully.");
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -70,8 +67,7 @@ const VehicleFetch = ({ refreshTable }) => {
         const result = await res.json();
         if (!res.ok) {
           if (isMounted) {
-            setSuccess(false);
-            setMessage(result.error);
+            toast.error(result.error);
           }
         } else {
           if (isMounted) {
@@ -80,8 +76,7 @@ const VehicleFetch = ({ refreshTable }) => {
         }
       } catch (error) {
         if (isMounted) {
-          setSuccess(false);
-          setMessage(`API ERROR. : ${error}`);
+          toast.error(`API ERROR. : ${error}`);
         }
       }
     };
@@ -114,15 +109,6 @@ const VehicleFetch = ({ refreshTable }) => {
   );
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
-  useEffect(() => {
-    if (message !== "") {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
   // fetch vehicle details by id
 
   const fetchVehicleById = async () => {
@@ -136,8 +122,7 @@ const VehicleFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        toast.error(result.error);
       } else {
         setFormData({
           v_model: result.getVehicleById.v_model || "",
@@ -151,8 +136,7 @@ const VehicleFetch = ({ refreshTable }) => {
         });
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
@@ -169,6 +153,8 @@ const VehicleFetch = ({ refreshTable }) => {
 
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
+    setIsSubmitLoading(true);
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vehicle/update-vehicle/${vehicleId}`,
@@ -183,37 +169,23 @@ const VehicleFetch = ({ refreshTable }) => {
       );
       const result = await res.json();
       if (!res.ok) {
-        setSuccess(false);
-        setMessage(result.error);
+        setIsSubmitLoading(false);
+
+        toast.error(result.error);
       } else {
+        setIsSubmitLoading(false);
+
         setUpdateFormPop(false);
         setGlobalRefereshTable((prev) => !prev);
-        setSuccess(true);
-        setMessage("Vehicle details updated successfully.");
+        toast.success("Vehicle details updated successfully.");
       }
     } catch (error) {
-      setSuccess(false);
-      setMessage(`API ERROR. : ${error}`);
+      toast.error(`API ERROR. : ${error}`);
     }
   };
 
   return (
     <div className="w-full">
-      {/* notification alert */}
-      <div className="py-3">
-        {message !== "" && (
-          <div
-            className={` w-full p-5 rounded-md ${
-              success ? "bg-green-200 text-white" : "bg-red-200 text-white"
-            }`}
-          >
-            <h1 className={`${success ? "text-green-700 " : "text-red-700 "}`}>
-              {message}
-            </h1>
-          </div>
-        )}
-      </div>
-
       <div className="w-full mt-5">
         <div className="overflow-x-auto rounded-sm shadow-md  border-gray-300">
           <div className="flex justify-end py-5">
@@ -346,143 +318,155 @@ const VehicleFetch = ({ refreshTable }) => {
 
       {updateFormPop && (
         <div className="w-full absolute top-50">
-          <form
-            className="relative space-y-6 w-[70%]  p-15 rounded-sm bg-white"
-            onSubmit={handleUpdate}
-            method="POST"
-          >
-            <div className="absolute top-2 right-2 ">
-              <Button
-                btnStyle=""
-                btnTitle="Close"
-                clickEvent={() => {
-                  setVehicleId("");
-                  setUpdateFormPop(false);
-                }}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 backdrop-blur-2xl">
-              <div>
-                <label htmlFor="v_model" className={`${inputLable}`}>
-                  Vehicle Model
-                </label>
-                <input
-                  id="v_model"
-                  name="v_model"
-                  type="text"
-                  value={formData.v_model}
-                  onChange={handleChange}
-                  required
-                  className={`${formInput}`}
-                  placeholder="e.g. Civic, Corolla"
-                  aria-describedby="v_model_help"
-                />
-                <p id="v_model_help" className={`${inputHelp}`}>
-                  Model name or number of the vehicle.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="v_brand" className={`${inputLable}`}>
-                  Brand
-                </label>
-                <input
-                  id="v_brand"
-                  name="v_brand"
-                  type="text"
-                  value={formData.v_brand}
-                  onChange={handleChange}
-                  required
-                  className={`${formInput}`}
-                  placeholder="e.g. Honda, Toyota"
-                />
-                <p id="v_type_help" className={`${inputHelp}`}>
-                  Select vehicle brand.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="v_type" className={`${inputLable}`}>
-                  Type
-                </label>
-                <select
-                  id="v_type"
-                  name="v_type"
-                  required
-                  className={`${formInput}`}
-                  value={formData.v_type}
-                  onChange={handleChange}
-                >
-                  <option value="">Select type</option>
-                  <option>Car</option>
-                  <option>SUV</option>
-                  <option>Truck</option>
-                  <option>Motorcycle</option>
-                  <option>Van</option>
-                  <option>Other</option>
-                </select>
-                <p id="v_type_help" className={`${inputHelp}`}>
-                  Select vehicle type.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="v_number" className={`${inputLable}`}>
-                  Vehicle Number
-                </label>
-                <input
-                  id="v_number"
-                  name="v_number"
-                  type="text"
-                  value={formData.v_number}
-                  onChange={handleChange}
-                  required
-                  className={`${formInput}`}
-                  placeholder="e.g. KA01AB1234"
-                  aria-describedby="v_number_help"
-                />
-                <p id="v_number_help" className={`${inputHelp}`}>
-                  Enter registration or chassis number.
-                </p>
+          {isSubmitLoading ? (
+            <div className="w-full flex justify-center items-center">
+              <div className="p-10 w-fit bg-white rounded-md flex flex-col items-center justify-center text-gray-800">
+                <Loader size={30} className="animate-spin" />
+                <h1 className="mt-2">Updating Vehicle...</h1>
               </div>
             </div>
-
-            <div className="flex justify-between">
-              <div className="w-[49%]">
-                <label htmlFor="last_service_date" className={`${inputLable}`}>
-                  Last Service Date
-                </label>
-                <input
-                  id="last_service_date"
-                  name="last_service_date"
-                  type="date"
-                  value={formData.last_service_date}
-                  onChange={handleChange}
-                  required
-                  className={`${formInput}`}
-                />
-                <p className={`${inputHelp}`}>
-                  Pick the date of the vehicle most recent service.
-                </p>
-              </div>
-              <div className="w-[50%] flex items-center justify-around gap-3">
+          ) : (
+            <form
+              className="relative space-y-6 w-[70%]  p-15 rounded-sm bg-white"
+              onSubmit={handleUpdate}
+              method="POST"
+            >
+              <div className="absolute top-2 right-2 ">
                 <Button
-                  btnStyle="text-white rounded-sm w-full h-10 flex justify-center items-center"
-                  btnTitle="Update"
-                />
-
-                <Button
+                  btnStyle=""
+                  btnTitle="Close"
                   clickEvent={() => {
-                    setUpdateFormPop(false);
                     setVehicleId("");
+                    setUpdateFormPop(false);
                   }}
-                  btnStyle="bg-secondary text-white rounded-sm w-full h-10 flex justify-center items-center"
-                  btnTitle="Cancel"
                 />
               </div>
-            </div>
-          </form>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 backdrop-blur-2xl">
+                <div>
+                  <label htmlFor="v_model" className={`${inputLable}`}>
+                    Vehicle Model
+                  </label>
+                  <input
+                    id="v_model"
+                    name="v_model"
+                    type="text"
+                    value={formData.v_model}
+                    onChange={handleChange}
+                    required
+                    className={`${formInput}`}
+                    placeholder="e.g. Civic, Corolla"
+                    aria-describedby="v_model_help"
+                  />
+                  <p id="v_model_help" className={`${inputHelp}`}>
+                    Model name or number of the vehicle.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="v_brand" className={`${inputLable}`}>
+                    Brand
+                  </label>
+                  <input
+                    id="v_brand"
+                    name="v_brand"
+                    type="text"
+                    value={formData.v_brand}
+                    onChange={handleChange}
+                    required
+                    className={`${formInput}`}
+                    placeholder="e.g. Honda, Toyota"
+                  />
+                  <p id="v_type_help" className={`${inputHelp}`}>
+                    Select vehicle brand.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="v_type" className={`${inputLable}`}>
+                    Type
+                  </label>
+                  <select
+                    id="v_type"
+                    name="v_type"
+                    required
+                    className={`${formInput}`}
+                    value={formData.v_type}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select type</option>
+                    <option>Car</option>
+                    <option>SUV</option>
+                    <option>Truck</option>
+                    <option>Motorcycle</option>
+                    <option>Van</option>
+                    <option>Other</option>
+                  </select>
+                  <p id="v_type_help" className={`${inputHelp}`}>
+                    Select vehicle type.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="v_number" className={`${inputLable}`}>
+                    Vehicle Number
+                  </label>
+                  <input
+                    id="v_number"
+                    name="v_number"
+                    type="text"
+                    value={formData.v_number}
+                    onChange={handleChange}
+                    required
+                    className={`${formInput}`}
+                    placeholder="e.g. KA01AB1234"
+                    aria-describedby="v_number_help"
+                  />
+                  <p id="v_number_help" className={`${inputHelp}`}>
+                    Enter registration or chassis number.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-between">
+                <div className="w-[49%]">
+                  <label
+                    htmlFor="last_service_date"
+                    className={`${inputLable}`}
+                  >
+                    Last Service Date
+                  </label>
+                  <input
+                    id="last_service_date"
+                    name="last_service_date"
+                    type="date"
+                    value={formData.last_service_date}
+                    onChange={handleChange}
+                    required
+                    className={`${formInput}`}
+                  />
+                  <p className={`${inputHelp}`}>
+                    Pick the date of the vehicle most recent service.
+                  </p>
+                </div>
+                <div className="w-[50%] flex items-center justify-around gap-3">
+                  <Button
+                    btnStyle="text-white rounded-sm w-full h-10 flex justify-center items-center"
+                    btnTitle="Update"
+                  />
+
+                  <Button
+                    clickEvent={() => {
+                      setUpdateFormPop(false);
+                      setVehicleId("");
+                    }}
+                    btnStyle="bg-secondary text-white rounded-sm w-full h-10 flex justify-center items-center"
+                    btnTitle="Cancel"
+                  />
+                </div>
+              </div>
+            </form>
+          )}
         </div>
       )}
     </div>

@@ -230,8 +230,7 @@ const TestimonialTable = ({ tableRefresh }: { tableRefresh: boolean }) => {
               <th className="px-4 py-3">Heading</th>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Description</th>
-              <th className="px-4 py-3 text-center">Total Reviews</th>{" "}
-              {/* Changed */}
+              <th className="px-4 py-3 text-center">Total Reviews</th>
               <th className="px-4 py-3 text-center">Action</th>
             </tr>
           </thead>
